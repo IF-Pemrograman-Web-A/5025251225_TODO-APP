@@ -36,3 +36,7 @@ Website ini dibuat menggunakan HTML dan CSS. Dalam pembuatannya, saya menggunaka
 
 8. **External CSS**
    Menggunakan file style.css terpisah untuk mengatur tampilan website.
+
+
+   <img width="2664" height="1286" alt="Screenshot 2026-09-14 at 7 35 08 PM" src="https://github.com/user-attachments/assets/0652b3bc-0bab-4ccf-86b1-f93f3dbc7421" />
+
