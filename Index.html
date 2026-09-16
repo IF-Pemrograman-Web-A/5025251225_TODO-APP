@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Todo List</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <span class="brand-mark" aria-hidden="true">✓</span>
+    <h1>My Todo List</h1>
+    <p class="tagline">One Task Closer to a Better Me.</p>
+  </header>
+
+  <main>
+    <section class="panel" aria-labelledby="todos-heading">
+      <div class="panel-header"><h2 id="todos-heading">Todos</h2><span class="count-badge" id="todoCount">4</span></div>
+      <ul class="todo-list" id="todoList">
+        <li class="selected" data-priority="medium" data-id="1" data-description="Membangun halaman Todo List statis menggunakan HTML semantik dan layout dua panel, dengan styling menggunakan stylesheet eksternal." tabindex="0"><input type="checkbox" checked id="todo-1" /><label for="todo-1">Finish HTML &amp; CSS layout</label></li>
+        <li data-priority="high" data-id="2" data-description="Merancang tata letak dua panel menggunakan CSS Grid supaya daftar tugas dan detail tugas tampil berdampingan." tabindex="0"><input type="checkbox" id="todo-2" /><label for="todo-2">Design the two-panel grid</label></li>
+        <li data-priority="low" data-id="3" data-description="Menambahkan media query agar tampilan menyesuaikan ukuran layar, baik di laptop maupun HP." tabindex="0"><input type="checkbox" id="todo-3" /><label for="todo-3">Make the page responsive</label></li>
+        <li data-priority="high" data-id="4" data-description="Membuat form untuk menambahkan tugas baru, lengkap dengan input judul dan pilihan prioritas." tabindex="0"><input type="checkbox" id="todo-4" /><label for="todo-4">Write the new-todo form</label></li>
+      </ul>
+    </section>
+
+    <div class="right-column">
+      <section class="panel" aria-labelledby="detail-heading" id="todoDetail">
+        <div class="panel-header"><h2 id="detail-heading">Todo details</h2></div>
+        <div class="detail-card">
+          <h3 id="detailTitle">Finish HTML &amp; CSS layout</h3>
+          <span class="status" id="detailStatus">Completed</span>
+          <p id="detailDescription">Membangun halaman Todo List statis menggunakan HTML semantik dan layout dua panel, dengan styling menggunakan stylesheet eksternal.</p>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="form-heading">
+        <div class="panel-header"><h2 id="form-heading">New todo</h2></div>
+        <form id="addTodoForm">
+          <label for="title">Title</label>
+          <input type="text" id="title" name="title" placeholder="e.g. Buy groceries" />
+          <label for="priority">Priority</label>
+          <select id="priority" name="priority">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+          <button type="submit">Add todo</button>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Yadebom</p>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
