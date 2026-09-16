@@ -9,7 +9,7 @@ Todo App merupakan aplikasi sederhana yang dibuat untuk membantu pengguna mencat
 
 Pada website ini terdapat dua bagian utama. Bagian kiri menampilkan daftar tugas beserta form untuk menambahkan tugas baru (judul dan prioritas), sedangkan bagian kanan menampilkan detail dari tugas yang sedang dipilih, meliputi judul, deskripsi, dan status pengerjaannya.
 
-Website ini dibuat menggunakan HTML dan CSS. Dalam pembuatannya, saya menggunakan elemen HTML semantik seperti header, main, aside, dan footer, serta CSS Grid untuk mengatur tata letak halaman. Website juga dibuat responsif agar tampilannya dapat menyesuaikan ukuran layar laptop maupun HP.
+Website ini dibuat menggunakan HTML, CSS, dan JavaScript. Dalam pembuatannya, saya menggunakan elemen HTML semantik seperti header, main, dan footer, serta CSS Grid untuk mengatur tata letak halaman. Website juga dibuat responsif agar tampilannya dapat menyesuaikan ukuran layar laptop maupun HP. Pada tahap ini, saya menambahkan JavaScript agar daftar tugas tidak lagi statis, melainkan bisa ditambah dan dipilih secara langsung oleh pengguna.
 
 ## Fitur
 
@@ -32,11 +32,22 @@ Website ini dibuat menggunakan HTML dan CSS. Dalam pembuatannya, saya menggunaka
    Tampilan website dapat menyesuaikan ukuran layar laptop dan HP menggunakan media query.
 
 7. **HTML Semantik**
-   Menggunakan elemen header, main, aside, dan footer agar struktur HTML lebih rapi.
+   Menggunakan elemen header, main, section, dan footer agar struktur HTML lebih rapi.
 
-8. **External CSS**
-   Menggunakan file style.css terpisah untuk mengatur tampilan website.
+8. **External CSS & JavaScript**
+   Menggunakan file `style.css` dan `script.js` terpisah untuk mengatur tampilan dan interaktivitas website.
+
+9. **Pilih Tugas untuk Lihat Detail**
+   Mengklik salah satu tugas di daftar akan menampilkan judul, deskripsi, dan status tugas tersebut secara otomatis di panel detail.
+
+10. **Tambah Tugas Secara Dinamis**
+    Form "New Todo" sudah berfungsi penuh: tugas baru yang diisi lewat form langsung muncul di daftar tanpa perlu reload halaman.
+
+11. **Update Status Otomatis**
+    Mencentang checkbox pada tugas akan langsung mengubah status (Completed/Pending) yang ditampilkan di panel detail, selama tugas tersebut sedang dipilih.
+
+12. **Penghitung Jumlah Tugas**
+    Badge jumlah tugas di panel kiri otomatis bertambah setiap kali tugas baru ditambahkan.
 
 
-   <img width="2664" height="1286" alt="Screenshot 2026-09-14 at 7 35 08 PM" src="https://github.com/user-attachments/assets/0652b3bc-0bab-4ccf-86b1-f93f3dbc7421" />
-
+  <img width="3584" height="2240" alt="Screenshot 2026-09-17 at 1 34 53 AM" src="https://github.com/user-attachments/assets/ba14713a-0340-4f66-a017-a4cef82c6609" />
