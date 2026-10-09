@@ -24,7 +24,7 @@ self.addEventListener('push', (event) => {
   const options = {
     body: payload.body || 'Ada tugas yang harus segera dikerjakan.',
     tag: payload.tag || 'taskwell-push-notification',
-    data: { url: payload.url || './index.php' },
+    data: { url: payload.url || './index.html' },
   };
 
   event.waitUntil(self.registration.showNotification(title, options));
@@ -35,9 +35,9 @@ self.addEventListener('notificationclick', (event) => {
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(async (clients) => {
-      let targetUrl = new URL(event.notification.data?.url || './index.php', self.registration.scope);
+      let targetUrl = new URL(event.notification.data?.url || './index.html', self.registration.scope);
       if (targetUrl.origin !== self.location.origin) {
-        targetUrl = new URL('./index.php', self.registration.scope);
+        targetUrl = new URL('./index.html', self.registration.scope);
       }
 
       const existingClient = clients.find((client) => client.url.startsWith(self.location.origin) && 'focus' in client);

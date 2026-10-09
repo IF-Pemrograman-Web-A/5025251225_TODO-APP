@@ -2,19 +2,34 @@
   'use strict';
 
   const app = document.getElementById('app-shell');
-  const bootstrapElement = document.getElementById('taskwell-bootstrap');
-  if (!app || !bootstrapElement) return;
+  if (!app) return;
 
-  let bootstrap;
+  const sampleUsers = [
+    { id: 1, name: 'Avery Morgan' },
+    { id: 2, name: 'Jordan Lee' },
+    { id: 3, name: 'Taylor Kim' },
+  ];
+  const sampleTodos = [
+    { id: 1, title: 'Review the project brief', description: 'Read through the project requirements and note the important deliverables.', priority: 'high', scope: 'personal', is_completed: 0, owner_id: 1 },
+    { id: 2, title: 'Organize this week', description: 'Group the smaller tasks into a clear plan for the week ahead.', priority: 'medium', scope: 'personal', is_completed: 1, owner_id: 1 },
+    { id: 3, title: 'Prepare a first draft', description: 'Put together a first pass so there is something concrete to review.', priority: 'low', scope: 'personal', is_completed: 0, owner_id: 2 },
+    { id: 4, title: 'Plan the team check-in', description: 'Share a short agenda and collect updates before the next team meeting.', priority: 'medium', scope: 'shared', is_completed: 0, owner_id: 1 },
+    { id: 5, title: 'Collect project feedback', description: 'Ask the team to add comments and open questions to the shared notes.', priority: 'high', scope: 'shared', is_completed: 0, owner_id: 2 },
+    { id: 6, title: 'Publish the weekly update', description: 'Summarize what changed this week and share it with the group.', priority: 'low', scope: 'shared', is_completed: 1, owner_id: 3 },
+  ];
+  const initialUrl = new URL(window.location.href);
+  let savedProfileId = null;
   try {
-    bootstrap = JSON.parse(bootstrapElement.textContent || '{}');
+    savedProfileId = Number(window.localStorage.getItem('taskwell-profile'));
   } catch {
-    bootstrap = {};
+    // Keep the default demo profile if local storage is unavailable.
   }
-
-  const currentUserId = Number(app.dataset.userId);
-  const currentUser = (bootstrap.users || []).find((user) => Number(user.id) === currentUserId);
-  const currentView = app.dataset.view === 'shared' ? 'shared' : 'personal';
+  const requestedProfileId = Number(initialUrl.searchParams.get('user_id'));
+  let currentUserId = sampleUsers.some((user) => user.id === requestedProfileId)
+    ? requestedProfileId
+    : (sampleUsers.some((user) => user.id === savedProfileId) ? savedProfileId : 1);
+  let currentUser = sampleUsers.find((user) => user.id === currentUserId);
+  let currentView = initialUrl.searchParams.get('view') === 'shared' ? 'shared' : 'personal';
   const listElement = document.getElementById('todo-list');
   const detailBody = document.getElementById('detail-body');
   const detailSubtitle = document.getElementById('detail-subtitle');
@@ -93,12 +108,12 @@
       scope: row.scope === 'shared' ? 'shared' : 'personal',
       completed: Number(row.is_completed) === 1,
       ownerId: Number(row.owner_id),
-      ownerName: String(row.owner_name || ''),
+      ownerName: String(row.owner_name || sampleUsers.find((user) => user.id === Number(row.owner_id))?.name || ''),
       image: null,
       reminderAt: null,
       remindedAt: null,
       createdAt: normalizeTimestamp(row.created_at),
-      updatedAt: normalizeTimestamp(row.updated_at),
+      updatedAt: normalizeTimestamp(row.updated_at || row.created_at),
     };
   }
 
@@ -112,7 +127,7 @@
       seedStatus.onsuccess = () => {
         if (!seedStatus.result?.value) {
           const store = transaction.objectStore('todos');
-          (bootstrap.todos || []).forEach((row) => store.put(seededTask(row)));
+          sampleTodos.forEach((row) => store.put(seededTask(row)));
           metadata.put({ key: 'seeded-from-sql-v1', value: true });
         }
       };
@@ -167,9 +182,61 @@
 
   function updateSelectionInUrl(id) {
     const url = new URL(window.location.href);
+    url.searchParams.set('view', currentView);
+    url.searchParams.set('user_id', String(currentUserId));
     if (id) url.searchParams.set('id', id);
     else url.searchParams.delete('id');
     window.history.replaceState({}, '', url);
+  }
+
+  function updateChrome() {
+    const isShared = currentView === 'shared';
+    const pageTitle = isShared ? 'Shared tasks' : 'Personal tasks';
+    document.title = `${pageTitle} · Taskwell`;
+    document.querySelectorAll('[data-page-title], [data-heading-title]').forEach((element) => {
+      element.textContent = pageTitle;
+    });
+    const eyebrow = document.querySelector('[data-view-eyebrow]');
+    const subtitle = document.querySelector('[data-page-subtitle]');
+    const tipTitle = document.querySelector('[data-tip-title]');
+    const tipCopy = document.querySelector('[data-tip-copy]');
+    if (eyebrow) eyebrow.textContent = isShared ? 'MADE TOGETHER' : 'YOUR SPACE';
+    if (subtitle) subtitle.textContent = isShared
+      ? 'A shared list for your team to stay in sync.'
+      : 'Keep your next steps clear and moving.';
+    if (tipTitle) tipTitle.textContent = isShared ? 'Good work is shared.' : 'Small steps add up.';
+    if (tipCopy) tipCopy.textContent = isShared
+      ? 'Everyone in this browser workspace can see and update shared tasks.'
+      : 'Pick one task and give it your focus today.';
+
+    document.querySelectorAll('[data-view]').forEach((link) => {
+      const active = link.dataset.view === currentView;
+      link.classList.toggle('active', active);
+      if (active) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+      let dot = link.querySelector('.nav-dot');
+      if (active && !dot) {
+        dot = document.createElement('span');
+        dot.className = 'nav-dot';
+        dot.setAttribute('aria-hidden', 'true');
+        link.append(dot);
+      } else if (!active && dot) {
+        dot.remove();
+      }
+    });
+
+    const profileSelect = document.getElementById('user_id');
+    if (profileSelect) profileSelect.value = String(currentUserId);
+    const profileName = document.getElementById('profile-name');
+    const avatar = document.getElementById('profile-avatar');
+    if (profileName) profileName.textContent = currentUser.name;
+    if (avatar) avatar.textContent = currentUser.name.charAt(0).toUpperCase();
+    const dateElement = document.getElementById('current-date');
+    if (dateElement) {
+      const now = new Date();
+      dateElement.dateTime = now.toISOString();
+      dateElement.textContent = new Intl.DateTimeFormat(undefined, { dateStyle: 'full' }).format(now);
+    }
   }
 
   function formatDate(value) {
@@ -356,7 +423,7 @@
     const priorities = ['low', 'medium', 'high'].map((priority) => `<option value="${priority}"${task.priority === priority ? ' selected' : ''}>${priority.charAt(0).toUpperCase()}${priority.slice(1)}</option>`).join('');
     const created = formatDate(task.createdAt);
     const owner = escapeHTML(task.ownerName || currentUser?.name || 'Workspace member');
-    detailBody.innerHTML = `<form class="detail-form" data-edit-form data-task-id="${escapeHTML(task.id)}" method="post" action="index.php" aria-label="Edit selected task">
+    detailBody.innerHTML = `<form class="detail-form" data-edit-form data-task-id="${escapeHTML(task.id)}" aria-label="Edit selected task">
         <label for="edit-title">Title</label>
         <input id="edit-title" name="title" type="text" maxlength="180" value="${escapeHTML(task.title)}" required />
 
@@ -480,7 +547,7 @@
   }
 
   function reminderPageUrl(task) {
-    const url = new URL(window.location.href);
+    const url = new URL('./index.html', window.location.href);
     url.searchParams.set('view', task.scope === 'shared' ? 'shared' : 'personal');
     url.searchParams.set('user_id', String(task.ownerId || currentUserId));
     url.searchParams.set('id', task.id);
@@ -572,6 +639,23 @@
 
   function onChange(event) {
     const target = event.target;
+    if (target.matches('#user_id')) {
+      const nextUserId = Number(target.value);
+      const nextUser = sampleUsers.find((user) => user.id === nextUserId);
+      if (!nextUser) return;
+      currentUserId = nextUser.id;
+      currentUser = nextUser;
+      try {
+        window.localStorage.setItem('taskwell-profile', String(currentUserId));
+      } catch {
+        announce('Profile changed for this visit. Browser storage could not save your preference.', 'error');
+      }
+      selectedId = null;
+      updateChrome();
+      updateSelectionInUrl(null);
+      renderList();
+      return;
+    }
     if (target.matches('[data-photo-file]')) {
       const form = target.closest('form');
       const file = target.files?.[0];
@@ -594,6 +678,7 @@
 
   function onClick(event) {
     const target = event.target;
+    const viewLink = target.closest('[data-view]');
     const cameraStart = target.closest('[data-camera-start]');
     const cameraCapture = target.closest('[data-camera-capture]');
     const cameraStop = target.closest('[data-camera-stop]');
@@ -601,6 +686,16 @@
     const toggleButton = target.closest('[data-toggle-task]');
     const selectLink = target.closest('[data-select-task]');
     const deleteButton = target.closest('[data-delete-task]');
+
+    if (viewLink) {
+      event.preventDefault();
+      currentView = viewLink.dataset.view === 'shared' ? 'shared' : 'personal';
+      selectedId = null;
+      updateChrome();
+      updateSelectionInUrl(null);
+      renderList();
+      return;
+    }
 
     if (cameraStart || cameraCapture || cameraStop || photoRemove) {
       const form = target.closest('form');
@@ -681,18 +776,16 @@
   }
 
   async function startApp() {
-    if (!currentUser) {
-      announce('The selected profile is unavailable. Reload the page and choose a profile.', 'error');
-      listElement.setAttribute('aria-busy', 'false');
-      return;
+    try {
+      window.localStorage.setItem('taskwell-profile', String(currentUserId));
+    } catch {
+      // Profile selection still works for this visit without local storage.
     }
+    updateChrome();
     mountPhotoField(createForm);
     app.addEventListener('click', onClick);
     app.addEventListener('change', onChange);
     app.addEventListener('submit', onSubmit);
-    document.getElementById('user_id')?.closest('form')?.addEventListener('change', (event) => {
-      if (event.target.matches('#user_id')) event.target.form.requestSubmit();
-    });
     window.addEventListener('pagehide', () => {
       document.querySelectorAll('[data-camera-video]').forEach((video) => {
         const stream = cameraStreams.get(video);
@@ -700,6 +793,17 @@
       });
     });
     initializeTheme();
+
+    if ('serviceWorker' in navigator) {
+      window.taskwellServiceWorkerReady = navigator.serviceWorker.register('./sw.js')
+        .then((registration) => navigator.serviceWorker.ready || registration)
+        .catch((error) => {
+          console.error('Service worker registration failed:', error);
+          return null;
+        });
+    } else {
+      window.taskwellServiceWorkerReady = Promise.resolve(null);
+    }
 
     try {
       tasks = await initializeTasks();

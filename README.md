@@ -1,54 +1,31 @@
 # Taskwell Todo App
 
-A small PHP and MySQL todo app with separate Personal and Shared task lists. On first use in a browser, sample tasks are copied from MySQL into IndexedDB. New tasks, edits, reminders, completion status, and captured images stay in IndexedDB in that browser.
-
-Student: Fayyadh Ahmad Zuhri · 5025251225 · Class A
-
-## Requirements
-
-- PHP 8.0 or newer with the PDO MySQL extension
-- MySQL 8.0 or MariaDB 10.4 or newer
-- A modern browser with IndexedDB, notifications, service workers, and camera support
+Taskwell is a static HTML, CSS, and JavaScript todo app. It does not need PHP, MySQL, or a database server. Tasks and attached images are stored in IndexedDB in the current browser. Theme and selected demo profile preferences are stored in `localStorage`.
 
 ## Run locally
 
-1. Create the sample database and tables:
+From this project folder, start a simple local web server:
 
-   ```sh
-   mysql -u root < data.sql
-   ```
+```sh
+python3 -m http.server 8000
+```
 
-   If your MySQL root account has a password, use `mysql -u root -p < data.sql` and enter that password when prompted.
+Then open <http://localhost:8000> in your browser. Stop the server with `Control-C` when you are done. Camera access and service workers need a secure context; `localhost` works for local development, while a hosted site needs HTTPS.
 
-2. If your local MySQL credentials differ from the defaults, set these environment variables before starting PHP:
+## App features
 
-   ```sh
-   export TODO_DB_HOST=127.0.0.1
-   export TODO_DB_NAME=todo_app
-   export TODO_DB_USER=root
-   export TODO_DB_PASSWORD=your-password
-   ```
+- Personal and Shared task views with three demo profiles.
+- Add, edit, complete, and delete tasks. Data persists in browser IndexedDB.
+- Add task descriptions, select or capture a task image, and set a reminder time.
+- Choose light or dark theme. The preference is saved in `localStorage`.
+- Service worker notifications for reminders. Grant browser notification permission with **Enable reminders**. Due reminders are checked while the app is open and when it is reopened. Notifications while the browser is fully closed require a push subscription and a push server, which this static app does not include.
+- Keyboard skip link, visible focus styles, labeled controls, and live status messages.
 
-3. Start PHP's local server from this folder:
-
-   ```sh
-   php -S localhost:8000
-   ```
-
-4. Open <http://localhost:8000>.
-
-The demo profile selector switches between the sample users. Personal and Shared tasks are stored in this browser, so they do not sync to another device. The app remembers the selected profile in the browser session. Theme preference is stored in `localStorage`. Clearing this site's browser data removes locally created tasks and images; the sample tasks are copied from MySQL again on the next visit.
-
-Camera access requires permission and a secure context. `localhost` works for local development; deployed sites need HTTPS. Reminder notifications require browser permission and are checked while the app is open, plus when it is reopened after a reminder time. Background notifications while the browser is closed need a push subscription and a push server, which are not configured in this sample.
+The demo profiles and initial sample tasks are included in `script.js`. The Personal and Shared views are demonstrations in the same browser; they do not sync with another device. Clearing this site's browser data removes tasks and images created in that browser. The starter tasks will be added again the next time the app initializes its local storage.
 
 ## Project files
 
-- `index.php` loads the active task list and composes the page.
-- `config.php` connects to MySQL, starts the session, and provides shared helpers.
-- `menu-bar.php` renders the Personal and Shared navigation and demo profile switcher.
-- `content.php` renders the task list, task editor, and create form.
-- `taskwell.js` handles IndexedDB task storage, browser reminders, theme preference, and camera capture.
-- `register-sw.js` registers the service worker when the app opens.
-- `sw.js` handles service worker lifecycle events and notification clicks.
-- `data.sql` creates the database structure and inserts sample users and tasks.
-- `style.css` contains the responsive page styling.
+- `index.html` contains the app interface.
+- `script.js` handles task storage, demo profiles, camera capture, theme, and reminders.
+- `style.css` contains the responsive styles and accessibility states.
+- `sw.js` handles service worker lifecycle and notification clicks.
