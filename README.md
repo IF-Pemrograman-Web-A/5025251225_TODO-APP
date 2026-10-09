@@ -1,42 +1,49 @@
-# 5025251225_TODO-APP
-# Identitas
-Fayyadh Ahmad Zuhri - 5025251225 Kelas A
+# Taskwell Todo App
 
-# Deskripsi
-## Deskripsi
+A small PHP and MySQL todo app with separate Personal and Shared task lists. It is built from reusable PHP files and uses PDO prepared statements for database operations.
 
-Todo App merupakan aplikasi sederhana yang dibuat untuk membantu pengguna mencatat dan mengelola daftar tugas (to-do list). Website ini menampilkan daftar tugas beserta status pengerjaannya, sehingga pengguna dapat dengan mudah melihat tugas mana yang sudah selesai dan mana yang belum.
+Student: Fayyadh Ahmad Zuhri · 5025251225 · Class A
 
-Pada website ini terdapat dua bagian utama. Bagian kiri menampilkan daftar tugas beserta form untuk menambahkan tugas baru (judul dan prioritas), sedangkan bagian kanan menampilkan detail dari tugas yang sedang dipilih, meliputi judul, deskripsi, dan status pengerjaannya.
+## Requirements
 
-Website ini dibuat menggunakan HTML dan CSS. Dalam pembuatannya, saya menggunakan elemen HTML semantik seperti header, main, aside, dan footer, serta CSS Grid untuk mengatur tata letak halaman. Website juga dibuat responsif agar tampilannya dapat menyesuaikan ukuran layar laptop maupun HP.
+- PHP 8.0 or newer with the PDO MySQL extension
+- MySQL 8.0 or MariaDB 10.4 or newer
 
-## Fitur
+## Run locally
 
-1. **Daftar Tugas**
-   Menampilkan daftar tugas dalam bentuk checkbox, lengkap dengan penanda coretan (strikethrough) untuk tugas yang sudah selesai.
+1. Create the sample database and tables:
 
-2. **Form Tambah Tugas**
-   Menyediakan tempat untuk mengisi judul tugas dan memilih tingkat prioritas (Low, Medium, High).
+   ```sh
+   mysql -u root -p < data.sql
+   ```
 
-3. **Panel Detail Tugas**
-   Menampilkan judul, deskripsi lengkap, dan status (misalnya "Completed") dari tugas yang sedang dipilih dalam bentuk badge berwarna.
+2. If your local MySQL credentials differ from the defaults, set these environment variables before starting PHP:
 
-4. **Layout Dua Panel**
-   Membagi tampilan website menjadi dua bagian menggunakan CSS Grid, yaitu panel daftar tugas dan panel detail tugas.
+   ```sh
+   export TODO_DB_HOST=127.0.0.1
+   export TODO_DB_NAME=todo_app
+   export TODO_DB_USER=root
+   export TODO_DB_PASSWORD=your-password
+   ```
 
-5. **Desain Warna Biru**
-   Menggunakan warna biru sebagai warna aksen utama dengan background abu-abu muda dan panel berwarna putih.
+3. Start PHP's local server from this folder:
 
-6. **Responsive Design**
-   Tampilan website dapat menyesuaikan ukuran layar laptop dan HP menggunakan media query.
+   ```sh
+   php -S localhost:8000
+   ```
 
-7. **HTML Semantik**
-   Menggunakan elemen header, main, aside, dan footer agar struktur HTML lebih rapi.
+4. Open <http://localhost:8000>.
 
-8. **External CSS**
-   Menggunakan file style.css terpisah untuk mengatur tampilan website.
+The demo profile selector switches between the sample users. Personal tasks are private to the selected profile; Shared tasks appear for every profile. The app remembers the selected profile in the browser session.
 
+## Project files
 
-   <img width="2664" height="1286" alt="Screenshot 2026-09-14 at 7 35 08 PM" src="https://github.com/user-attachments/assets/0652b3bc-0bab-4ccf-86b1-f93f3dbc7421" />
-
+- `index.php` loads the active task list and composes the page.
+- `config.php` connects to MySQL, starts the session, and provides shared helpers.
+- `menu-bar.php` renders the Personal and Shared navigation and demo profile switcher.
+- `content.php` renders the task list, task editor, and create form.
+- `actions.php` handles create, read selection, update, completion toggle, and delete requests.
+- `register-sw.js` registers the service worker when the app opens.
+- `sw.js` handles service worker lifecycle events and displays incoming push notifications. Sending push messages requires a push subscription and a configured push server.
+- `data.sql` creates the database structure and inserts sample users and tasks.
+- `style.css` contains the responsive page styling.
