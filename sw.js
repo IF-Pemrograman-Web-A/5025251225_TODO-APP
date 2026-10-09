@@ -1,5 +1,6 @@
-self.addEventListener('install', () => {
+self.addEventListener('install', (event) => {
   console.log('Service worker sedang dipasang...');
+  event.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener('activate', (event) => {
@@ -18,10 +19,12 @@ self.addEventListener('push', (event) => {
     }
   }
 
+  if (!payload || typeof payload !== 'object') payload = {};
   const title = payload.title || 'Pengingat tugas Taskwell';
   const options = {
     body: payload.body || 'Ada tugas yang harus segera dikerjakan.',
-    data: { url: './index.php' },
+    tag: payload.tag || 'taskwell-push-notification',
+    data: { url: payload.url || './index.php' },
   };
 
   event.waitUntil(self.registration.showNotification(title, options));
@@ -31,13 +34,19 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
   event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
-      const existingClient = clients.find((client) => 'focus' in client);
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(async (clients) => {
+      let targetUrl = new URL(event.notification.data?.url || './index.php', self.registration.scope);
+      if (targetUrl.origin !== self.location.origin) {
+        targetUrl = new URL('./index.php', self.registration.scope);
+      }
+
+      const existingClient = clients.find((client) => client.url.startsWith(self.location.origin) && 'focus' in client);
       if (existingClient) {
+        if ('navigate' in existingClient) await existingClient.navigate(targetUrl.href);
         return existingClient.focus();
       }
 
-      return self.clients.openWindow(event.notification.data.url);
+      return self.clients.openWindow(targetUrl.href);
     }),
   );
 });

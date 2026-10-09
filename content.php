@@ -1,125 +1,94 @@
 <header class="topbar">
   <div class="breadcrumb"><span>Workspace</span><span aria-hidden="true">/</span><strong><?= h($pageTitle) ?></strong></div>
-  <div class="topbar-user"><span class="avatar"><?= h(strtoupper(substr($currentUser['name'], 0, 1))) ?></span><span><?= h($currentUser['name']) ?></span></div>
+  <div class="topbar-user"><span class="avatar" aria-hidden="true"><?= h(strtoupper(substr($currentUser['name'], 0, 1))) ?></span><span><?= h($currentUser['name']) ?></span></div>
 </header>
 
 <section class="page-content" aria-labelledby="page-title">
   <div class="page-heading">
     <div>
       <p class="eyebrow"><?= $view === 'shared' ? 'MADE TOGETHER' : 'YOUR SPACE' ?></p>
-      <h1 id="page-title"><?= h($pageTitle) ?><span class="heading-count"><?= count($todos) ?></span></h1>
+      <h1 id="page-title"><?= h($pageTitle) ?><span class="heading-count" id="task-count" aria-label="0 tasks">0</span></h1>
       <p class="page-subtitle"><?= $view === 'shared' ? 'A shared list for your team to stay in sync.' : 'Keep your next steps clear and moving.' ?></p>
     </div>
     <div class="date-chip"><span class="date-icon" aria-hidden="true">▦</span><?= h(date('l, F j')) ?></div>
   </div>
 
-  <?php if ($flash): ?>
-    <div class="flash-message <?= h($flash['type'] ?? 'success') ?>" role="status"><?= h($flash['message'] ?? '') ?></div>
-  <?php endif; ?>
+  <div class="app-notice" id="app-status" role="status" aria-live="polite" aria-atomic="true" hidden></div>
 
   <div class="content-grid">
     <section class="panel task-panel" aria-labelledby="tasks-heading">
       <div class="panel-heading">
-        <div><h2 id="tasks-heading">Tasks</h2><p><?= count($todos) ?> <?= count($todos) === 1 ? 'task' : 'tasks' ?> in this list</p></div>
+        <div><h2 id="tasks-heading">Tasks</h2><p id="task-list-summary">Loading your tasks…</p></div>
         <span class="panel-menu" aria-hidden="true">•••</span>
       </div>
 
-      <ul class="todo-list">
-        <?php if (!$todos): ?>
-          <li class="empty-state"><span class="empty-icon" aria-hidden="true">✓</span><strong>Nothing on the list yet</strong><span>Add a task to get started.</span></li>
-        <?php endif; ?>
-        <?php foreach ($todos as $todo): ?>
-          <?php $isSelected = $selectedTodo && (int) $selectedTodo['id'] === (int) $todo['id']; ?>
-          <li class="todo-item <?= $isSelected ? 'selected' : '' ?> <?= (int) $todo['is_completed'] === 1 ? 'is-complete' : '' ?>">
-            <form method="post" action="index.php" class="toggle-form">
-              <input type="hidden" name="csrf_token" value="<?= h($_SESSION['csrf_token']) ?>" />
-              <input type="hidden" name="action" value="toggle" />
-              <input type="hidden" name="todo_id" value="<?= h($todo['id']) ?>" />
-              <input type="hidden" name="view" value="<?= h($view) ?>" />
-              <button class="check-button <?= (int) $todo['is_completed'] === 1 ? 'checked' : '' ?>" type="submit" aria-label="<?= (int) $todo['is_completed'] === 1 ? 'Mark ' . h($todo['title']) . ' as pending' : 'Mark ' . h($todo['title']) . ' as complete' ?>">
-                <?php if ((int) $todo['is_completed'] === 1): ?><span aria-hidden="true">✓</span><?php endif; ?>
-              </button>
-            </form>
-            <a class="todo-link" href="index.php?view=<?= h($view) ?>&amp;user_id=<?= h($currentUserId) ?>&amp;id=<?= h($todo['id']) ?>">
-              <span class="todo-title"><?= h($todo['title']) ?></span>
-              <?php if ($view === 'shared'): ?><span class="todo-owner">Added by <?= h($todo['owner_name']) ?></span><?php endif; ?>
-            </a>
-            <span class="priority priority-<?= h($todo['priority']) ?>"><?= h(ucfirst($todo['priority'])) ?></span>
-          </li>
-        <?php endforeach; ?>
+      <ul class="todo-list" id="todo-list" aria-label="Task list" aria-busy="true">
+        <li class="loading-state">Loading tasks…</li>
       </ul>
 
-      <form class="new-task-form" method="post" action="index.php">
-        <input type="hidden" name="csrf_token" value="<?= h($_SESSION['csrf_token']) ?>" />
-        <input type="hidden" name="action" value="create" />
-        <input type="hidden" name="view" value="<?= h($view) ?>" />
-        <label class="sr-only" for="new-title">Task title</label>
-        <span class="add-mark" aria-hidden="true">+</span>
-        <input id="new-title" name="title" type="text" maxlength="180" placeholder="Add a task..." required />
-        <label class="sr-only" for="new-priority">Task priority</label>
-        <select id="new-priority" class="new-priority-select" name="priority" aria-label="Task priority">
-          <option value="low">Low</option>
-          <option value="medium" selected>Medium</option>
-          <option value="high">High</option>
-        </select>
-        <button class="add-button" type="submit">Add task</button>
+      <form class="new-task-form" id="create-form" method="post" action="index.php" aria-label="Add a task">
+        <div class="quick-add-row">
+          <span class="add-mark" aria-hidden="true">+</span>
+          <label class="sr-only" for="new-title">Task title</label>
+          <input id="new-title" name="title" type="text" maxlength="180" placeholder="Add a task…" autocomplete="off" required />
+          <label class="sr-only" for="new-priority">Task priority</label>
+          <select id="new-priority" class="new-priority-select" name="priority">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+          <button class="add-button" type="submit">Add task</button>
+        </div>
+
+        <details class="optional-task-fields">
+          <summary>Add description, photo, or reminder</summary>
+          <div class="optional-fields-inner">
+            <label for="new-description">Description <span class="optional-label">(optional)</span></label>
+            <textarea id="new-description" name="description" rows="3" maxlength="5000" placeholder="Add a few details about this task…"></textarea>
+
+            <label for="new-reminder">Reminder time <span class="optional-label">(optional)</span></label>
+            <input id="new-reminder" name="reminderAt" type="datetime-local" aria-describedby="reminder-help" />
+            <p class="field-help" id="reminder-help">Reminders appear while this app is open, or when you open it after the reminder time. Enable browser notifications in the sidebar.</p>
+
+            <div data-photo-mount="create"></div>
+          </div>
+        </details>
       </form>
     </section>
 
     <div class="detail-column">
-      <?php if ($selectedTodo): ?>
-        <section class="panel detail-panel" aria-labelledby="detail-heading">
-          <div class="panel-heading detail-heading">
-            <div><h2 id="detail-heading">Task details</h2><p>Update the details or remove this task.</p></div>
-            <span class="detail-spark" aria-hidden="true">✳</span>
-          </div>
+      <section class="panel detail-panel" id="task-details" aria-labelledby="detail-heading" tabindex="-1">
+        <div class="panel-heading detail-heading">
+          <div><h2 id="detail-heading">Task details</h2><p id="detail-subtitle">Select a task to view or edit it.</p></div>
+          <span class="detail-spark" aria-hidden="true">✳</span>
+        </div>
+        <div id="detail-body">
+          <div class="blank-detail"><span class="empty-icon" aria-hidden="true">✳</span><p>Choose a task from the list to see its details.</p></div>
+        </div>
+      </section>
 
-          <form class="detail-form" method="post" action="index.php">
-            <input type="hidden" name="csrf_token" value="<?= h($_SESSION['csrf_token']) ?>" />
-            <input type="hidden" name="action" value="update" />
-            <input type="hidden" name="todo_id" value="<?= h($selectedTodo['id']) ?>" />
-            <input type="hidden" name="view" value="<?= h($view) ?>" />
-            <label for="edit-title">Title</label>
-            <input id="edit-title" name="title" type="text" maxlength="180" value="<?= h($selectedTodo['title']) ?>" required />
-
-            <div class="detail-meta">
-              <div><label for="edit-priority">Priority</label>
-                <select id="edit-priority" name="priority">
-                  <?php foreach (['low' => 'Low', 'medium' => 'Medium', 'high' => 'High'] as $value => $label): ?>
-                    <option value="<?= h($value) ?>" <?= $selectedTodo['priority'] === $value ? 'selected' : '' ?>><?= h($label) ?></option>
-                  <?php endforeach; ?>
-                </select>
-              </div>
-              <div><span class="field-label">Status</span>
-                <span class="status-pill <?= (int) $selectedTodo['is_completed'] === 1 ? 'complete' : '' ?>"><span></span><?= (int) $selectedTodo['is_completed'] === 1 ? 'Completed' : 'In progress' ?></span>
-              </div>
-            </div>
-
-            <label for="edit-description">Description</label>
-            <textarea id="edit-description" name="description" rows="5" maxlength="5000" placeholder="Add a few details about this task..."><?= h($selectedTodo['description']) ?></textarea>
-
-            <div class="detail-actions">
-              <button class="primary-button" type="submit">Save changes <span aria-hidden="true">→</span></button>
-            </div>
-          </form>
-
-          <div class="task-record"><span>Created by <?= h($selectedTodo['owner_name']) ?></span><span>Updated <?= h(date('M j', strtotime($selectedTodo['updated_at']))) ?></span></div>
-          <form class="delete-form" method="post" action="index.php">
-            <input type="hidden" name="csrf_token" value="<?= h($_SESSION['csrf_token']) ?>" />
-            <input type="hidden" name="action" value="delete" />
-            <input type="hidden" name="todo_id" value="<?= h($selectedTodo['id']) ?>" />
-            <input type="hidden" name="view" value="<?= h($view) ?>" />
-            <button type="submit">Delete task</button>
-          </form>
-        </section>
-      <?php else: ?>
-        <section class="panel blank-detail"><span class="empty-icon" aria-hidden="true">✳</span><h2>Your task details</h2><p>Select a task from the list to view and edit it.</p></section>
-      <?php endif; ?>
-
-      <section class="tip-card">
+      <section class="tip-card" aria-label="Taskwell tip">
         <span class="tip-icon" aria-hidden="true">✦</span>
-        <div><strong><?= $view === 'shared' ? 'Good work is shared.' : 'Small steps add up.' ?></strong><p><?= $view === 'shared' ? 'Everyone in your workspace can see and update shared tasks.' : 'Pick one task and give it your focus today.' ?></p></div>
+        <div><strong><?= $view === 'shared' ? 'Good work is shared.' : 'Small steps add up.' ?></strong><p><?= $view === 'shared' ? 'Everyone in this browser workspace can see and update shared tasks.' : 'Pick one task and give it your focus today.' ?></p></div>
       </section>
     </div>
   </div>
 </section>
+
+<template id="photo-field-template">
+  <fieldset class="photo-field" data-photo-field>
+    <legend>Task image <span class="optional-label">(optional)</span></legend>
+    <div class="photo-controls">
+      <label class="file-picker">Choose or take an image
+        <input type="file" accept="image/*" capture="environment" data-photo-file />
+      </label>
+      <button class="secondary-button" type="button" data-camera-start>Use camera</button>
+      <button class="secondary-button" type="button" data-camera-capture hidden>Capture photo</button>
+      <button class="secondary-button" type="button" data-camera-stop hidden>Close camera</button>
+    </div>
+    <video class="camera-preview" data-camera-video playsinline muted aria-label="Live camera preview" hidden></video>
+    <img class="photo-preview" alt="Task image preview" hidden />
+    <button class="text-button" type="button" data-photo-remove hidden>Remove image</button>
+    <p class="field-help camera-status" data-camera-status role="status" aria-live="polite"></p>
+  </fieldset>
+</template>

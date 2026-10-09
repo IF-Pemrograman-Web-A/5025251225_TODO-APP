@@ -31,26 +31,6 @@ function h($value): string
     return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
-function set_flash(string $message, string $type = 'success'): void
-{
-    $_SESSION['flash'] = ['message' => $message, 'type' => $type];
-}
-
-function redirect_to(string $view, int $userId, ?int $todoId = null): void
-{
-    $query = ['view' => $view, 'user_id' => $userId];
-    if ($todoId !== null && $todoId > 0) {
-        $query['id'] = $todoId;
-    }
-
-    header('Location: index.php?' . http_build_query($query));
-    exit;
-}
-
-if (!isset($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
-
 $users = $pdo->query('SELECT id, name, email FROM users ORDER BY name')->fetchAll();
 if (!$users) {
     http_response_code(500);
